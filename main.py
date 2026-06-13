@@ -1,54 +1,47 @@
-from flask import Flask, render_template, request, jsonify
-import os
-from dotenv import load_dotenv
-from openai import OpenAI
+# end point recieved krne ka kaam krnge ye files
+from flask import Flask,render_template ,url_for,request,jsonify
 
 app = Flask(__name__)
 
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-
-client = OpenAI(api_key=api_key)
-
 @app.route("/")
 def hello_world():
-    return render_template("index.html")
+    # yaha Query le rahe hai URL through
+    name=request.args.get("name",default="selke")
+    sub=request.args.get("sub",default="java")
+    # http://127.0.0.1:5000/?name=krishna+kumar&sub=AI
+    # http://127.0.0.1:5000/?&sub=AI thw default will work
+    # i.e=your query was: selke & subject: AI
+    print(name)
+    print(sub) 
 
-@app.route("/ask", methods=["POST"])
-def ask():
-    question = request.form.get("question")
-        
-    response = client.responses.create(
-        model="gpt-5.4",
-        input=[
-                {"role": "system", "content": "Act like a helpful personal assistant"},
-                {"role": "user", "content": question}
-            ],
-            temperature=0.7,
-            max_output_tokens=512
-    )
-        
-    answer = response.output_text.strip()
-    return jsonify({"response": answer}), 200
+    data={
+        "msg":"Welcome to the paltform"
+      }
+    # return render_template("index.html",name=name,sub=sub)
+    return jsonify(data),200
 
-@app.route("/summarize", methods=["POST"])
-def summarize():
-    email_text = request.form.get("email")
-    prompt = f"summarize the following email in 2-3 sentences: {email_text}"
-        
-    response = client.responses.create(
-        model="gpt-5.4",
-        input=[
-                {"role": "system", "content": "Act like an expert email assistant"},                
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.3,
-            max_output_tokens=512
-    )
-        
-    summary = response.output_text.strip()
-    return jsonify({"response": summary}), 200
 
-if __name__ == "__main__":
+# URL ==> end point '/login'  jb bhi ho to login page return kr dega
+@app.route("/login",methods={"GET","POST"})
+def login_page():
+    if request.method=="POST":
+       
+        print(request.form)
+        name=request.form["username"]
+        password=request.form["password"]
+        # here we need to send data in DB and then verify then login
+        # return f"<p> welcome{name}!</p>"
+        freinds=["Santosh","Yogesh","krishna","Dalchand"]
+        header="<header>Welcome To Bihar </header>"
+
+        return render_template("welcome.html",name=name,password=password,freinds=freinds,header=header)
+    else:
+    
+     return render_template("login.html")
+
+
+
+
+
+if __name__=="__main__":
     app.run(debug=True)
-
